@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "805610142626",
+    "project_id": "rmhconnect-a5adb",
+    "storage_bucket": "rmhconnect-a5adb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805610142626:android:ca89a3d5e110b355a150fb",
+        "android_client_info": {
+          "package_name": "com.example.rmhconnect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCW49uSPdImyDFTXPptQWGxXtLqUzhbQA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
