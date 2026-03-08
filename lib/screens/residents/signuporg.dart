@@ -111,7 +111,7 @@ class _SignuporgState extends State<Signuporg> {
                           joined = false;
                           button = "Join";
                         });
-                      };
+                      }
                     },
                     child: Text(button, style: const TextStyle(fontSize: 20, color: Colors.white),),
                   ),

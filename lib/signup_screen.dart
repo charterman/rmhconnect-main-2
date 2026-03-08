@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'constants.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 
 class SignupPage extends StatefulWidget {
-  const SignupPage({Key? key}) : super(key: key);
+  const SignupPage({super.key});
 
   @override
   State<SignupPage> createState() => _SignupPageState();
@@ -165,7 +164,7 @@ class _SignupPageState extends State<SignupPage> {
 
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
-                  child: Container(
+                  child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
@@ -189,7 +188,7 @@ class _SignupPageState extends State<SignupPage> {
                               .doc(credential.user!.uid)
                               .set({
                                 'email': email,
-                                'role': role,
+                                'role': { },
                                 'location': valueOrg,
                                 'name': name,
                               });

@@ -1,15 +1,8 @@
-import 'package:rmhconnect/constants.dart';
-import 'package:rmhconnect/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:rmhconnect/screens/Events.dart';
-import 'package:rmhconnect/constants.dart';
 import 'package:rmhconnect/screens/admins/admin_home.dart';
 import 'package:rmhconnect/screens/admins/admin_profile.dart';
-import 'package:rmhconnect/screens/admins/adminbranches.dart';
 import 'package:rmhconnect/screens/admins/super_admin/super_admin_branches.dart';
 import 'package:rmhconnect/screens/admins/super_admin/super_admin_profile.dart';
-import 'package:rmhconnect/screens/logo.dart';
-import 'package:rmhconnect/screens/residents/announcements_page.dart';
 
 import '../../../theme.dart';
 
@@ -26,7 +19,7 @@ class _SuperAdminNavigationState extends State<SuperAdminNavigation> {
   static final List<Widget> _pages = <Widget>[
     AdminHome(),
     SuperAdminBranches(),
-    SuperAdminProfile()
+    AdminProfile()
   ];
 
   void _onItemTapped(int index){

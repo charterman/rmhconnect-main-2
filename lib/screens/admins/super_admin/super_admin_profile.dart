@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rmhconnect/constants.dart';
 import 'package:rmhconnect/screens/ProfilePhoto.dart';
-import 'package:rmhconnect/screens/admins/memberlist.dart';
 import 'package:rmhconnect/screens/admins/super_admin/super_admin_memberlist.dart';
 
 class SuperAdminProfile extends StatefulWidget {

@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:rmhconnect/constants.dart';
 import 'package:rmhconnect/theme.dart';
 
 
@@ -66,7 +65,7 @@ class AnnouncementsPage extends StatelessWidget {
     }
 
     final orgQuery = await FirebaseFirestore.instance
-        .collection('organizations')
+        .collection('organizations')//todo get all signup orgzanizations
         .where('name', isEqualTo: location)
         .limit(1)
         .get();

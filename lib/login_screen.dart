@@ -1,15 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:rmhconnect/login_screen.dart';
 import 'package:rmhconnect/constants.dart';
-import 'package:rmhconnect/constants.dart';
-import 'package:flutter/material.dart';
-import 'package:rmhconnect/screens/Events.dart';
-import 'package:rmhconnect/screens/logo.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -78,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
-                    child: Container(
+                    child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
@@ -89,14 +84,47 @@ class _LoginPageState extends State<LoginPage> {
                                 email: email,
                                 password: password,
                               );
-                              final userDoc = await FirebaseFirestore.instance.collection('users').doc(credential.user!.uid).get();
-                              final role = userDoc.data()?['role'] ?? 'user';
-                              if (role == 'admin') {
-                                Navigator.pushReplacementNamed(context, '/admin_navigation');
-                              } else if(role == 'super_admin'){
-                                Navigator.pushReplacementNamed(context, '/super_admin_navigation');
-                              } else {
-                                Navigator.pushReplacementNamed(context, '/navigation_screen');
+                              final user = await FirebaseFirestore.instance.collection('users').doc(credential.user!.uid).get();
+                              final role = user.data()?['role'] ?? 'user';
+                              if (user != null) {
+                                final userDoc = await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(user.id)
+                                    .get();
+
+                                final rawRole = userDoc.data()?['role'];
+
+                                if (rawRole == null) {
+                                  Navigator.pushReplacementNamed(context, '/welcome');
+                                } else if (rawRole is String) {
+                                  // Old system — role is a plain string
+                                  if (rawRole == 'admin') {
+                                    Navigator.pushReplacementNamed(context, '/admin_navigation');
+                                  } else if (rawRole == 'super_admin') {
+                                    Navigator.pushReplacementNamed(context, '/super_admin_navigation');
+                                  } else {
+                                    Navigator.pushReplacementNamed(context, '/navigation_screen');
+                                  }
+                                } else if (rawRole is Map) {
+                                  final Map<String, dynamic> roleMap = Map<String, dynamic>.from(rawRole);
+
+                                  // Check if any value in the map is 'admin' or 'super_admin'
+                                  final hasSuperAdmin = roleMap.values.any((v) =>
+                                  v.toString() == 'super_admin');
+                                  final hasAdmin = roleMap.values.any((v) => v.toString() == 'admin');
+                                  print(hasAdmin);
+                                  if (hasSuperAdmin) {
+                                    Navigator.pushReplacementNamed(context, '/super_admin_navigation');
+                                  } else if (hasAdmin) {
+                                    Navigator.pushReplacementNamed(context, '/admin_navigation');
+                                    print("admin");
+                                  } else {
+                                    Navigator.pushReplacementNamed(context, '/navigation_screen');
+                                    print("no admin here");
+                                  }
+                                } else {
+                                  Navigator.pushReplacementNamed(context, '/welcome');
+                                }
                               }
                             } catch (e) {
                               setState(() { error = e.toString(); });

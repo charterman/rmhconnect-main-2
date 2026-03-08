@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:rmhconnect/constants.dart';
-import 'package:rmhconnect/screens/admins/admin_view_events.dart';
 import 'package:rmhconnect/theme.dart';
 
 enum SampleItem { itemOne, itemTwo, itemThree }

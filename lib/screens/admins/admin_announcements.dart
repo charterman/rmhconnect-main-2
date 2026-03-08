@@ -247,12 +247,11 @@ class _AdminAnnouncementsState extends State<AdminAnnouncements> {
                       child: Card(
                         color: CharityConnectTheme.cardColor,
                         elevation: 5,
+                        margin: const EdgeInsets.symmetric(vertical: 15),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12.0),
                           child: ListTile(
-                            leading: imgUrl != null
-                                ? Image.asset('assets/images/person-icon.png')
-                                : null,
+                            leading: Image.asset('assets/images/person-icon.png'),
                             title: Text(description ?? 'No description'),
                             subtitle: Column(
                               children: [
@@ -278,7 +277,6 @@ class _AdminAnnouncementsState extends State<AdminAnnouncements> {
                             ),
                           ),
                         ),
-                        margin: const EdgeInsets.symmetric(vertical: 15),
                       ),
                     );
                   },

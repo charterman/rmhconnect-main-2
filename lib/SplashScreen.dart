@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:rmhconnect/screens/logo.dart';
 import 'package:rmhconnect/constants.dart';
 import 'package:rmhconnect/theme.dart';
 
@@ -43,22 +42,46 @@ TextStyle titleStyle(context){
     await Future.delayed(const Duration(seconds: 3));
 
     final user = FirebaseAuth.instance.currentUser;
+    print("-1");
     if (user != null) {
-      final userDoc =
-      await FirebaseFirestore.instance
+      final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .get();
-      final role = userDoc.data()?['role'] ?? 'user';
-      if (role == 'admin') {
-        Navigator.pushReplacementNamed(context, '/admin_navigation');
-      } else if (role == 'super_admin') {
-        Navigator.pushReplacementNamed(context, '/super_admin_navigation');
-      } else {
-        Navigator.pushReplacementNamed(context, '/navigation_screen');
+      print("0");
+      final rawRole = userDoc.data()?['role'];
+      print("1");
+      if (rawRole == null) {
+        Navigator.pushReplacementNamed(context, '/welcome');
       }
-    } else {
-      Navigator.pushReplacementNamed(context, '/welcome');
+      else if (rawRole is String) {
+        // Old system — role is a plain string
+        print("2");
+        if (rawRole == 'admin') {
+          Navigator.pushReplacementNamed(context, '/admin_navigation');
+        } else if (rawRole == 'super_admin') {
+          Navigator.pushReplacementNamed(context, '/super_admin_navigation');
+        } else {
+          Navigator.pushReplacementNamed(context, '/navigation_screen');
+        }
+      } else if (rawRole is Map) {
+        final Map<String, dynamic> roleMap = Map<String, dynamic>.from(rawRole);
+        print("4");
+        // Check if any value in the map is 'admin' or 'super_admin'
+        final hasSuperAdmin = roleMap.values.any((v) =>
+        v.toString() == 'super_admin');
+        final hasAdmin = roleMap.values.any((v) => v.toString() == 'admin');
+
+        if (hasSuperAdmin) {
+          Navigator.pushReplacementNamed(context, '/super_admin_navigation');
+        } else if (hasAdmin) {
+          Navigator.pushReplacementNamed(context, '/admin_navigation');
+        } else {
+          Navigator.pushReplacementNamed(context, '/navigation_screen');
+        }
+      } else {
+        Navigator.pushReplacementNamed(context, '/welcome');
+      }
     }
   }
 

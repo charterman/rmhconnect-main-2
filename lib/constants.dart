@@ -10,18 +10,18 @@ final TextStyle titlingblck = TextStyle(fontSize:32, color: Colors.black, fontWe
 final TextStyle versionStyley = TextStyle(color: Colors.black.withOpacity(0.5), fontSize: 32);
 final TextStyle titleStyley = TextStyle(fontSize: 32);
 bool? signIn = false;
-late String username = "username";
-late String role = "role";
-late String password = "password";
-late String email = "email";
-late String location = "location";
-late String nbname = "charity name";
-late String nbloc = "charity location";
+String username = "username";
+String role = "role";
+String password = "password";
+String email = "email";
+String location = "location";
+String nbname = "charity name";
+String nbloc = "charity location";
 late String nenme;
 late String nedscrp;
-late String cbname = "charity name current";
-late String nmname = "bob";
-late String nmrole = "role";
+String cbname = "charity name current";
+String nmname = "bob";
+String nmrole = "role";
 
 
 

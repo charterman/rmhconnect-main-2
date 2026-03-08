@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:rmhconnect/constants.dart';
 import 'package:rmhconnect/theme.dart';
 
 import 'event_detail_page.dart';
@@ -226,7 +225,7 @@ class _OrgGetInfoState extends State<OrgGetInfo> {
                               ),
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     );
                   },

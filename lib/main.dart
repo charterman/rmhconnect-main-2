@@ -19,7 +19,6 @@ import 'firebase_options.dart';
 import 'package:rmhconnect/screens/admins/adminbranches.dart';
 import 'package:rmhconnect/screens/admins/admin_members.dart';
 import 'package:rmhconnect/theme.dart';
-import 'package:rmhconnect/screens/admins/admin_view_events.dart';
 
 Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -94,8 +93,8 @@ class MyApp extends StatelessWidget {
           final args = settings.arguments as Map<String, dynamic>? ?? {};
           return MaterialPageRoute(
             builder: (context) => AdminViewEvents(
-              orgid: args['orgid'] ?? null,
-              eventid: args['eventid'] ?? null,
+              orgid: args['orgid'],
+              eventid: args['eventid'],
             ),
           );
         }

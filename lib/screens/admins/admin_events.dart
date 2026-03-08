@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:rmhconnect/constants.dart';
-import 'package:rmhconnect/screens/Events.dart';
 import 'package:rmhconnect/screens/admins/admin_get_events.dart';
 
 class AdminEvents extends StatefulWidget {

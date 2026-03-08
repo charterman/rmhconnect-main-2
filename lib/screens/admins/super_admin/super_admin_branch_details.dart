@@ -127,23 +127,28 @@ class _SuperAdminBranchDetailsState extends State<SuperAdminBranchDetails> {
                             },
                           );
                         },
-                        child: Card(
-                            clipBehavior: Clip.antiAlias,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25.0),
+                        child: Row(
+                          children: [
+                            Card(
+                                clipBehavior: Clip.antiAlias,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25.0),
+                                ),
+                                color: CharityConnectTheme.cardColor,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(32.0),
+                                  child: Column(
+                                      children: [
+                                        Icon(Icons.group, color: CharityConnectTheme.primaryColor, size: 40),
+                                        SizedBox(height: 20),
+                                        Text("Members", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                      ]
+                                  ),
+                                )
                             ),
-                            color: CharityConnectTheme.cardColor,
-                            child: Padding(
-                              padding: const EdgeInsets.all(32.0),
-                              child: Column(
-                                  children: [
-                                    Icon(Icons.group, color: CharityConnectTheme.primaryColor, size: 40),
-                                    SizedBox(height: 20),
-                                    Text("Members", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                                  ]
-                              ),
-                            )
+                          ],
                         ),
+
                       ),
                       GestureDetector(
                         onTap: () {

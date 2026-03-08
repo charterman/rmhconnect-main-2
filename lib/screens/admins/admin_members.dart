@@ -1,10 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rmhconnect/constants.dart';
-import 'package:rmhconnect/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:rmhconnect/screens/Events.dart';
-import 'package:rmhconnect/constants.dart';
-import 'package:rmhconnect/screens/logo.dart';
 import 'package:rmhconnect/screens/admins/memberlist.dart';
 
 class AdminMembers extends StatefulWidget {
@@ -16,6 +12,18 @@ class AdminMembers extends StatefulWidget {
 }
 
 class _AdminMembersState extends State<AdminMembers> {
+
+  String resolveRole(DocumentSnapshot user) {
+    final everyroleuser = user['role'];
+    if (everyroleuser == null) return 'Unknown';
+    if (everyroleuser is String) return everyroleuser;
+    if (everyroleuser is Map) {
+      final roleMap = Map<String, dynamic>.from(everyroleuser);
+      return roleMap[widget.orgName]?.toString() ?? 'user';
+    }
+    return 'user';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,11 +34,11 @@ class _AdminMembersState extends State<AdminMembers> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(50,20,50,0),
+          padding: const EdgeInsets.fromLTRB(50, 20, 50, 0),
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('users')
-                .where('location', isEqualTo: widget.orgName)
+                .where('orgs', arrayContains: widget.orgName)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -43,12 +51,16 @@ class _AdminMembersState extends State<AdminMembers> {
               // Get the list of users
               final users = snapshot.data!.docs;
 
-              // Sort so 'admin' roles appear first
+              // Sort so 'super_admin' appears first, then 'admin', then everyone else
               users.sort((a, b) {
-                final roleA = a['role']?.toString().toLowerCase() ?? '';
-                final roleB = b['role']?.toString().toLowerCase() ?? '';
+                final roleA = resolveRole(a).toLowerCase();
+                final roleB = resolveRole(b).toLowerCase();
+
+                if (roleA == 'super_admin' && roleB != 'super_admin') return -1;
+                if (roleA != 'super_admin' && roleB == 'super_admin') return 1;
                 if (roleA == 'admin' && roleB != 'admin') return -1;
                 if (roleA != 'admin' && roleB == 'admin') return 1;
+
                 return 0;
               });
 
@@ -57,16 +69,24 @@ class _AdminMembersState extends State<AdminMembers> {
                 itemCount: users.length,
                 itemBuilder: (context, index) {
                   final user = users[index];
+                  final uid = user.id;
+                  final org = widget.orgName;
                   final name = user['name'] ?? 'Unknown';
-                  final role = user['role'] ?? 'Member';
-                  return memberlist(name: name, role: role, pfp: "assets/images/person-icon.png");
+                  final role = resolveRole(user);
+
+                  return memberlist(
+                    name: name,
+                    org: org,
+                    uid: uid,
+                    role: role,
+                    pfp: "assets/images/person-icon.png",
+                  );
                 },
               );
             },
           ),
-
         ),
-      )
+      ),
     );
   }
 }

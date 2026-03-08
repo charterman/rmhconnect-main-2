@@ -1,9 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,7 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool informationLoaded = false;
   User? user;
   String name = '';
-  String role = '';
+  dynamic role; // Can be a String (e.g. 'admin') or a Map (e.g. {'Springfield': 'admin'})
   String email = '';
   String location = '';
   bool locationPressed = false;
@@ -58,21 +56,21 @@ class _ProfilePageState extends State<ProfilePage> {
         .doc(user?.uid)
         .get();
 
-        final tempJoinedOrgs = joinedOrgs['orgs']??[]; // ??[] makes empty list
+    final tempJoinedOrgs = joinedOrgs['orgs']??[]; // ??[] makes empty list
 
-        for (int i = 0; i < tempJoinedOrgs.length; i++){
-          FirebaseFirestore.instance.collection("organizations").where('name', isEqualTo: tempJoinedOrgs[i]).get().then(
+    for (int i = 0; i < tempJoinedOrgs.length; i++){
+      FirebaseFirestore.instance.collection("organizations").where('name', isEqualTo: tempJoinedOrgs[i]).get().then(
               (querySnapshot){
-                for (var docSnapshot in querySnapshot.docs) {
-            //      print('docSnapshot ID: ${docSnapshot.id}');
-                  joinedOrganizations.add(docSnapshot.data());
-                }
-                //print('Temp Joined Org: ${tempJoinedOrgs[i]}');
-              }
-          );
-        }
-        //print('tempJoinedOrgs: ${tempJoinedOrgs.length}');
-        //print('joinedOrganizations: ${joinedOrganizations.length}');
+            for (var docSnapshot in querySnapshot.docs) {
+              //      print('docSnapshot ID: ${docSnapshot.id}');
+              joinedOrganizations.add(docSnapshot.data());
+            }
+            //print('Temp Joined Org: ${tempJoinedOrgs[i]}');
+          }
+      );
+    }
+    //print('tempJoinedOrgs: ${tempJoinedOrgs.length}');
+    //print('joinedOrganizations: ${joinedOrganizations.length}');
   }
 
   Future<void> init() async{
@@ -92,15 +90,22 @@ class _ProfilePageState extends State<ProfilePage> {
               .collection('users')
               .doc(user.uid)
               .update({
-                'profileImageUrl': profileImageUrl
-              });
+            'profileImageUrl': profileImageUrl
+          });
         }
       });
 
       setState(() {
         try{
           name = userDoc['name'];
-          role = userDoc['role'];
+          final rawRole = userDoc['role'];
+          if (rawRole is String) {
+            role = rawRole;
+          } else if (rawRole is Map) {
+            role = Map<String, dynamic>.from(rawRole);
+          } else {
+            role = '';
+          }
           email = userDoc['email'];
           location = userDoc['location'];
           loadOrgNames();
@@ -220,51 +225,51 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
 
-    Future<void> _saveProfile() async {
-      if (user == null) return;
+  Future<void> _saveProfile() async {
+    if (user == null) return;
 
-      try {
-        String? profileImageUrl;
+    try {
+      String? profileImageUrl;
 
-        // Upload new image if selected
-        if (_imageFile != null) {
-          profileImageUrl = await _uploadProfileImage();
-          if (profileImageUrl == null) {
-            throw Exception('Failed to upload image');
-          }
+      // Upload new image if selected
+      if (_imageFile != null) {
+        profileImageUrl = await _uploadProfileImage();
+        if (profileImageUrl == null) {
+          throw Exception('Failed to upload image');
         }
-
-        // Update user profile in Firestore
-        final updateData = {
-          'profileImageUrl': profileImageUrl ?? '',
-        };
-
-        // Only update image URL if we have a new one
-        if (profileImageUrl != null) {
-          updateData['profileImageUrl'] = profileImageUrl;
-        }
-
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user!.uid)
-            .update(updateData);
-
-        setState(() {
-          _imageFile = null; // Clear the selected file
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
-        );
-      } catch (e) {
-        setState(() {
-          print(e.toString());
-        });
       }
+
+      // Update user profile in Firestore
+      final updateData = {
+        'profileImageUrl': profileImageUrl ?? '',
+      };
+
+      // Only update image URL if we have a new one
+      if (profileImageUrl != null) {
+        updateData['profileImageUrl'] = profileImageUrl;
+      }
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .update(updateData);
+
+      setState(() {
+        _imageFile = null; // Clear the selected file
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated successfully!')),
+      );
+    } catch (e) {
+      setState(() {
+        print(e.toString());
+      });
     }
+  }
 
 
-    Future<void> _pickImage() async {
+  Future<void> _pickImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(
       source: ImageSource.gallery,
@@ -294,181 +299,195 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-    @override
+  /// Returns a human-readable string for [role] regardless of whether it is a
+  /// plain String (e.g. 'admin') or a Map (e.g. {'Springfield': 'admin',
+  /// 'Shelbyville': 'user'}).  For a map each entry is shown as "key: value".
+  String _getRoleDisplayString() {
+    if (role == null || role == '') return '';
+    if (role is String) return role as String;
+    if (role is Map) {
+      return (role as Map).entries
+          .map((e) => '${e.key}: ${e.value}')
+          .join(', ');
+    }
+    return role.toString();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: backgroundColor,
-          title: Text("My Profile", style: titling),
-          centerTitle: true,
-          actions: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0,0,30,0),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
+        appBar: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: backgroundColor,
+            title: Text("My Profile", style: titling),
+            centerTitle: true,
+            actions: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0,0,30,0),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.blue,
-                      )
-                  ),
-                  IconButton(icon: Icon(Icons.settings), onPressed: _showSettingsMenu),
-                ],
+                        )
+                    ),
+                    IconButton(icon: Icon(Icons.settings), onPressed: _showSettingsMenu),
+                  ],
+                ),
               ),
-            ),
-          ]
-      ),
-      body: Center(
-          child: Column(
-            children: [
-              informationLoaded ?
-                Container(
-                //children: [
-                child: Column(
-                  children: [
-                    SizedBox(height: 20),
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          GestureDetector(
-                            onTap: _pickImage,
-                              child:
-                              profileImageUrl != null
-                                  ? CircleAvatar(
+            ]
+        ),
+        body: Center(
+            child: Column(
+                children: [
+                  informationLoaded ?
+                  Container(
+                    //children: [
+                    child: Column(
+                      children: [
+                        SizedBox(height: 20),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              GestureDetector(
+                                  onTap: _pickImage,
+                                  child:
+                                  profileImageUrl != null
+                                      ? CircleAvatar(
                                       radius: 50,
                                       backgroundImage: NetworkImage(profileImageUrl!)
-                                    )
-                                  : Profilephoto(pfp: "assets/images/person-icon.png")
-                          ),
-                          Column(
-                              children: [
-                                Text(name, style: mytextnormal),
-                                Text(role, style: mytextnormal),
-                                Text(email, style: TextStyle(fontSize: 18, decoration: TextDecoration.underline)),
-                              ]
-                          )
-                        ]
-                    ),
-                  ],
-                ),
-                //]
-              )
-              : Center(child: CircularProgressIndicator()),
-
-              SizedBox(height: 30),
-
-              DefaultTabController(
-                length: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TabBar(
-                      labelColor: CharityConnectTheme.primaryColor,
-                      unselectedLabelColor: CharityConnectTheme.secondaryTextColor,
-                      indicatorColor: CharityConnectTheme.primaryColor,
-                      tabs: const [
-                        Tab(text: 'Organizations'),
-                        Tab(text: 'Events')
+                                  )
+                                      : Profilephoto(pfp: "assets/images/person-icon.png")
+                              ),
+                              Column(
+                                  children: [
+                                    Text(name, style: mytextnormal),
+                                    Text(_getRoleDisplayString(), style: mytextnormal),
+                                    Text(email, style: TextStyle(fontSize: 18, decoration: TextDecoration.underline)),
+                                  ]
+                              )
+                            ]
+                        ),
                       ],
                     ),
-                    SizedBox(
-                      height: resizedHeight(context, 3880/8), //resizedHeight(context, 550),
-                      child: TabBarView(
-                        children: [
-                          // Organizations Tab
-                          joinedOrganizations.isEmpty
-                              ? Center(child: Text('No organizations joined yet'))
-                              : ListView.builder(
-                                  itemCount: joinedOrganizations.length,
-                                  itemBuilder: (context, index) {
-                                    final org = joinedOrganizations[index];
-                                    final discoveryName = org['name'];
-                                    final discoveryPhoto = org['url'];
-                                    return Discovery(name: discoveryName, photo: discoveryPhoto);
-                              // return Card(
-                              //   margin: EdgeInsets.symmetric(vertical: 8),
-                              //   child: ListTile(
-                              //     leading: Icon(Icons.business, color: CharityConnectTheme.primaryColor),
-                              //     title: Text(org['name'].toUpperCase() ?? 'Organization'),
-                              //     subtitle: Text(org['address'] ?? 'No address'),
-                              //     onTap: () {
-                              //       Navigator.pushNamed(
-                              //         context,
-                              //         '/organization_detail',
-                              //         arguments: {
-                              //           'orgId': org['orgId'],
-                              //           'orgData': org,
-                              //         },
-                              //       );
-                              //     },
-                              //   ),
-                              // ); ret
-                              return Discovery(name: discoveryName, photo: discoveryPhoto);
-                                  },
-                              ),
-                          // Upcoming Activities Tab
-                          Column(
+                    //]
+                  )
+                      : Center(child: CircularProgressIndicator()),
+
+                  SizedBox(height: 30),
+
+                  DefaultTabController(
+                    length: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TabBar(
+                          labelColor: CharityConnectTheme.primaryColor,
+                          unselectedLabelColor: CharityConnectTheme.secondaryTextColor,
+                          indicatorColor: CharityConnectTheme.primaryColor,
+                          tabs: const [
+                            Tab(text: 'Organizations'),
+                            Tab(text: 'Events')
+                          ],
+                        ),
+                        SizedBox(
+                          height: resizedHeight(context, 3880/8), //resizedHeight(context, 550),
+                          child: TabBarView(
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    //const Text('My Joined Events', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                    ElevatedButton(
-                                      onPressed: (){
-                                        setState((){
-                                          showPastEvents = false;
-                                        });
-                                      },
-                                      child: Text('My Joined Events', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-
-                                    ),
-                                    ElevatedButton(
-                                        onPressed: (){
-                                          setState((){
-                                            showPastEvents = true;
-
-                                          });
-                                        },
-                                        child: Text('Past Events', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
-                                    ),
-                                    IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          // Force refresh
-                                        });
-                                      },
-                                      icon: const Icon(Icons.refresh),
-                                    ),
-                                  ],
-                                ),
+                              // Organizations Tab
+                              joinedOrganizations.isEmpty
+                                  ? Center(child: Text('No organizations joined yet'))
+                                  : ListView.builder(
+                                itemCount: joinedOrganizations.length,
+                                itemBuilder: (context, index) {
+                                  final org = joinedOrganizations[index];
+                                  final discoveryName = org['name'];
+                                  final discoveryPhoto = org['url'];
+                                  return Discovery(name: discoveryName, photo: discoveryPhoto);
+                                  // return Card(
+                                  //   margin: EdgeInsets.symmetric(vertical: 8),
+                                  //   child: ListTile(
+                                  //     leading: Icon(Icons.business, color: CharityConnectTheme.primaryColor),
+                                  //     title: Text(org['name'].toUpperCase() ?? 'Organization'),
+                                  //     subtitle: Text(org['address'] ?? 'No address'),
+                                  //     onTap: () {
+                                  //       Navigator.pushNamed(
+                                  //         context,
+                                  //         '/organization_detail',
+                                  //         arguments: {
+                                  //           'orgId': org['orgId'],
+                                  //           'orgData': org,
+                                  //         },
+                                  //       );
+                                  //     },
+                                  //   ),
+                                  // ); ret
+                                  return Discovery(name: discoveryName, photo: discoveryPhoto);
+                                },
                               ),
-                              SingleChildScrollView(
-                                child: Column(
-                                  children: [
-                                    if(showPastEvents == false)
-                                      OrgGetInfo()
-                                    else
-                                      OrgGetInfoPast()
-                                  ],
-                                ),
+                              // Upcoming Activities Tab
+                              Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        //const Text('My Joined Events', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                        ElevatedButton(
+                                          onPressed: (){
+                                            setState((){
+                                              showPastEvents = false;
+                                            });
+                                          },
+                                          child: Text('My Joined Events', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+
+                                        ),
+                                        ElevatedButton(
+                                            onPressed: (){
+                                              setState((){
+                                                showPastEvents = true;
+
+                                              });
+                                            },
+                                            child: Text('Past Events', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              // Force refresh
+                                            });
+                                          },
+                                          icon: const Icon(Icons.refresh),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SingleChildScrollView(
+                                    child: Column(
+                                      children: [
+                                        if(showPastEvents == false)
+                                          OrgGetInfo()
+                                        else
+                                          OrgGetInfoPast()
+                                      ],
+                                    ),
+                                  )
+                                ],
                               )
                             ],
-                          )
-                        ],
-                      ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
 
-            ]
-          )
+                ]
+            )
         )
     );
   }

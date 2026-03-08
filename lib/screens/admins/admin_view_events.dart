@@ -1,10 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../constants.dart';
 import '../../theme.dart';
-import '../ProfilePhoto.dart';
 
 class AdminViewEvents extends StatefulWidget {
   final orgid;
@@ -45,7 +43,7 @@ class _AdminViewEventsState extends State<AdminViewEvents> {
         .get();
 
     return announcementsSnapshot.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>;
+      final data = doc.data();
 
       return {
         'id': doc.id,
